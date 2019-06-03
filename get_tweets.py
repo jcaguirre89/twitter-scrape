@@ -16,7 +16,10 @@ from collections import namedtuple
 import pandas as pd
 import twitter
 
-from secrets import api_key
+try:
+    from secrets import api_key
+except ImportError:
+    raise ImportError('Remember to create a secrets.py file with the twitter API keys')
 
 DEFAULT_LANG = 'en'
 INTERMEDIATE_SAVE = 50000
