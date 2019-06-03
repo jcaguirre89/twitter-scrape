@@ -31,7 +31,7 @@ Tweet = namedtuple('Tweet', ['date', 'id', 'text',
 
 
 
-def build_parser():
+def _build_parser():
     parser = ArgumentParser()
     parser.add_argument('--terms', type=str, dest='terms',
                         help='comma-sepparated list of terms to search: term1,term2,term3',
@@ -47,7 +47,7 @@ def build_parser():
                         required=False, default=INTERMEDIATE_SAVE)
     return parser
 
-def build_tweet_entry(tweet):
+def _build_tweet_entry(tweet):
     """ Builds a simplified version of a tweet, just with the basic, useful information """
     tweet_instance = Tweet(tweet.created_at, tweet.id,
                            tweet.full_text, tweet.user.screen_name,
@@ -99,7 +99,7 @@ def main():
     """
 
     # Get args
-    parser = build_parser()
+    parser = _build_parser()
     options = parser.parse_args()
     start_id = options.start_id
     comma_sep_terms = options.terms
@@ -116,7 +116,7 @@ def main():
 
     tweets = []
     for idx, tweet in enumerate(get_tweets(start_id, parameters)):
-        tweets.append(build_tweet_entry(tweet))
+        tweets.append(_build_tweet_entry(tweet))
         # Store intermediate results
         if (idx + 1) % intermediate_save == 0:
             df = pd.DataFrame(tweets)
