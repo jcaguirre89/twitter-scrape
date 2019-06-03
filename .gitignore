@@ -1,0 +1,7 @@
+data*
+secrets.py
+.idea/
+__pycache__/
+test*
+.ipynb*
+*.csv
