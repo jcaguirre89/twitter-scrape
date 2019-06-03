@@ -146,5 +146,4 @@ def build_search_term(comma_sep_terms):
 
 if __name__ == '__main__':
     api = twitter.Api(*api_key, sleep_on_rate_limit=True, tweet_mode='extended')
-
-    df = main()
+    main()
