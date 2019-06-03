@@ -48,6 +48,7 @@ def build_parser():
     return parser
 
 def build_tweet_entry(tweet):
+    """ Builds a simplified version of a tweet, just with the basic, useful information """
     tweet_instance = Tweet(tweet.created_at, tweet.id,
                            tweet.full_text, tweet.user.screen_name,
                            tweet.place, tweet.user.id,
