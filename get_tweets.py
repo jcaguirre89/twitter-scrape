@@ -22,6 +22,8 @@ except ImportError:
     raise ImportError('Remember to create a secrets.py file with the twitter API keys')
 
 DEFAULT_LANG = 'en'
+# Just an old start id, will run until 7 days are reached
+DEFAULT_START_ID = 1132073789481787392
 INTERMEDIATE_SAVE = 50000
 
 Tweet = namedtuple('Tweet', ['date', 'id', 'text',
@@ -38,13 +40,16 @@ def _build_parser():
                         required=True)
     parser.add_argument('--start_id', type=int, dest='start_id',
                         help='Tweet ID that marks the oldest tweet to search for, so once reached it stops',
-                        required=True)
+                        required=False, default=DEFAULT_START_ID)
     parser.add_argument('--lang', type=str, dest='lang',
                         help='Search only tweets in this language. Default: en',
                         required=False, default=DEFAULT_LANG)
     parser.add_argument('--checkpoint', type=int, dest='intermediate_save',
                         help='Save a pickle dataframe every time a multiple of this number of tweets is reached',
                         required=False, default=INTERMEDIATE_SAVE)
+    parser.add_argument('--csv', type=bool, dest='save_csv',
+                        help='Save a CSV file as well',
+                        required=False, default=False)
     return parser
 
 def _build_tweet_entry(tweet):
@@ -105,6 +110,7 @@ def main():
     comma_sep_terms = options.terms
     lang = options.lang
     intermediate_save = options.intermediate_save
+    save_csv = options.save_csv
 
     # Build parameters dict
     parameters = {
@@ -122,14 +128,19 @@ def main():
             df = pd.DataFrame(tweets)
             df.to_pickle(f"{round(time.time())}_output.pkl")
 
-    df = pd.DataFrame(tweets)
-    df.to_pickle(f"{round(time.time())}_output.pkl")
+    if len(tweets):
+        df = pd.DataFrame(tweets)
+        df.to_pickle(f"{round(time.time())}_output.pkl")
 
-    earliest = df.loc[0, 'date']
-    latest = df.loc[df.shape[0] - 1, 'date']
-    print(f'Got {df.shape[0]} tweets going from {earliest} to {latest}')
+        earliest = df.loc[0, 'date']
+        latest = df.loc[df.shape[0] - 1, 'date']
+        print(f'Got {df.shape[0]} tweets going from {earliest} to {latest}')
 
-    return df
+        if save_csv:
+            df.to_csv(f"{round(time.time())}_output.csv", encoding='utf-16')
+        return df
+    else:
+        print("Didn't find any tweets for the given parameters")
 
 def build_search_term(comma_sep_terms):
     """
