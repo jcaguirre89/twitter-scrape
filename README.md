@@ -5,9 +5,15 @@ Once done it saves a pickled pandas dataframe with the resulting tweets. Also sa
 
 ## Sample usage:
 ```bash
-# Search for all tweets that have the terms 'Chile' or 'Santiago', in english, going back as far as the tweet with id 1132073789481787392 (around may 25, 2019)
-python get_tweets.py --terms Chile,Santiago --start_id 1132073789481787392 --lang es
+# Search for all tweets that have the terms 'Chile' or 'Santiago', in spanish, going as far back as possible
+python get_tweets.py --terms Chile,Santiago --lang es
 ```
+
+Only mandatory argument is --terms, which must be a comma-separated string. The defaults are:
+- start_id: As far back as possible (around 7 days)
+- lang: en
+- checkpoint: 50000
+- csv: False
 
 ## Requirements
 Must create a `secrets.py` file in the working directory with the following form:
