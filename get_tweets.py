@@ -136,6 +136,7 @@ def main():
         latest = df.loc[df.shape[0] - 1, 'date']
         print(f'Got {df.shape[0]} tweets going from {earliest} to {latest}')
 
+        # Not working great, doesnt handle \r and \n inside emojis
         if save_csv:
             df.to_csv(f"{round(time.time())}_output.csv", encoding='utf-16')
         return df
