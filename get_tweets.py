@@ -136,9 +136,14 @@ def main():
         latest = df.loc[df.shape[0] - 1, 'date']
         print(f'Got {df.shape[0]} tweets going from {earliest} to {latest}')
 
-        # Not working great, doesnt handle \r and \n inside emojis
         if save_csv:
-            df.to_csv(f"{round(time.time())}_output.csv", encoding='utf-16')
+            import csv
+            with open(f"{round(time.time())}_output.csv", mode='w', encoding='utf-8-sig', newline='') as fp:
+                writer = csv.writer(fp)
+                writer.writerow(df.columns)
+                for line in df.itertuples(index=False):
+                    writer.writerow(line)
+            #df.to_csv(f"{round(time.time())}_output.csv", encoding='utf-8-sig')
         return df
     else:
         print("Didn't find any tweets for the given parameters")
