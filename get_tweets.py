@@ -157,12 +157,7 @@ def build_search_term(comma_sep_terms):
     if len(entries) == 1:
         # Single term to search
         return entries[0]
-    search_term = ''
-    for term in entries:
-        search_term += term + ' OR '
-    # Remove last 4 digits (' OR ')
-    search_term = search_term[:-4]
-    return search_term
+    return ' OR '.join(entries)
 
 
 if __name__ == '__main__':
