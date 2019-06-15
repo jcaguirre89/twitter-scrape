@@ -22,7 +22,7 @@ Tweet = namedtuple('Tweet', ['date', 'timestamp', 'id', 'text',
                              'user_handle', 'place',
                              'user_id', 'followers_count',
                              'favorite_count', 'retweet_count',
-                             'is_retweet', 'city'])
+                             'is_retweet', 'city', 'country'])
 
 try:
     from secrets import api_key
@@ -32,6 +32,7 @@ except ImportError:
 DEFAULT_LANG = 'en'
 # Just an old start id, will run until 7 days are reached
 DEFAULT_START_ID = 1132073789481787392
+OUT_FILENAME = f"{round(time.time())}_output.csv"
 
 
 def _build_parser():
@@ -50,7 +51,7 @@ def _build_parser():
 
 def get_tweets(start_id, parameters):
     """
-    Returns a generator that fetches all tweets with the given parameters, starting
+    A generator that fetches all tweets with the given parameters, starting
     from the latest one and going back until the `start_id` is reached.
 
 
@@ -103,14 +104,13 @@ def main():
     }
 
     # Create file and write top row with column names
-    file_name = f"{round(time.time())}_output.csv"
-    with open(file_name, mode='w', encoding='utf-8-sig', newline='') as fp:
+    with open(OUT_FILENAME, mode='w', encoding='utf-8-sig', newline='') as fp:
         writer = csv.writer(fp)
         writer.writerow(Tweet._fields)
 
     for tweet in get_tweets(start_id, parameters):
         tweet_instance = _process_tweet(tweet)
-        with open(file_name, mode='a', encoding='utf-8-sig', newline='') as fp:
+        with open(OUT_FILENAME, mode='a', encoding='utf-8-sig', newline='') as fp:
             writer = csv.writer(fp)
             writer.writerow(tweet_instance)
 
@@ -130,7 +130,7 @@ def _build_search_term(comma_sep_terms):
 def _parse_date(date):
     """
     receives a date as a string and returns a timestamp
-    Turn back to datetime: datetime.datetime.fromtimestamp(timestamp)
+    Turn back to datetime: datetime.datetime.utcfromtimestamp(timestamp)
     Timezone is always UTC
     """
     # sample input: 'Thu Jun 13 21:21:39 +0000 2019'
@@ -152,16 +152,19 @@ def _process_tweet(tweet):
     timestamp = _parse_date(tweet.created_at)
     is_retweet = True if text.startswith('RT') else False
     try:
-        city = tweet.place['full_name']
+        city = tweet.place['name']
+        country = tweet.place['country']
+
     except TypeError:
         city = None
+        country = None
 
     tweet_instance = Tweet(tweet.created_at, timestamp, tweet.id,
                            tweet.full_text, tweet.user.screen_name,
                            tweet.place, tweet.user.id,
                            tweet.user.followers_count,
                            tweet.favorite_count, tweet.retweet_count,
-                           is_retweet, city,
+                           is_retweet, city, country
                            )
 
     return tweet_instance
