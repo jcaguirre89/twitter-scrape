@@ -9,11 +9,9 @@ Once done it saves a pickled pandas dataframe with the resulting tweets. Also sa
 python get_tweets.py --terms Chile,Santiago --lang es
 ```
 
-Only mandatory argument is --terms, which must be a comma-separated string. The defaults are:
+Only mandatory argument is `--terms`, which must be a comma-separated string. The defaults are:
 - `start_id`: As far back as possible (around 7 days)
 - `lang`: `en`
-- `checkpoint`: `50000`
-- `csv`: `False`
 
 ## Requirements
 Must create a `secrets.py` file in the working directory with the following form:
