@@ -12,9 +12,17 @@ June 3, 2019
 from argparse import ArgumentParser
 import time
 from collections import namedtuple
+from dateutil.parser import parse
+import datetime
+import csv
 
-import pandas as pd
 import twitter
+
+Tweet = namedtuple('Tweet', ['date', 'timestamp', 'id', 'text',
+                             'user_handle', 'place',
+                             'user_id', 'followers_count',
+                             'favorite_count', 'retweet_count',
+                             'is_retweet', 'city'])
 
 try:
     from secrets import api_key
@@ -24,13 +32,6 @@ except ImportError:
 DEFAULT_LANG = 'en'
 # Just an old start id, will run until 7 days are reached
 DEFAULT_START_ID = 1132073789481787392
-INTERMEDIATE_SAVE = 50000
-
-Tweet = namedtuple('Tweet', ['date', 'id', 'text',
-                             'user_handle', 'place',
-                             'user_id', 'followers_count',
-                             'favorite_count', 'retweet_count'])
-
 
 
 def _build_parser():
@@ -44,24 +45,7 @@ def _build_parser():
     parser.add_argument('--lang', type=str, dest='lang',
                         help='Search only tweets in this language. Default: en',
                         required=False, default=DEFAULT_LANG)
-    parser.add_argument('--checkpoint', type=int, dest='intermediate_save',
-                        help='Save a pickle dataframe every time a multiple of this number of tweets is reached',
-                        required=False, default=INTERMEDIATE_SAVE)
-    parser.add_argument('--csv', type=bool, dest='save_csv',
-                        help='Save a CSV file as well',
-                        required=False, default=False)
     return parser
-
-def _build_tweet_entry(tweet):
-    """ Builds a simplified version of a tweet, just with the basic, useful information """
-    tweet_instance = Tweet(tweet.created_at, tweet.id,
-                           tweet.full_text, tweet.user.screen_name,
-                           tweet.place, tweet.user.id,
-                           tweet.user.followers_count,
-                           tweet.favorite_count, tweet.retweet_count
-                           )
-
-    return tweet_instance
 
 
 def get_tweets(start_id, parameters):
@@ -109,46 +93,29 @@ def main():
     start_id = options.start_id
     comma_sep_terms = options.terms
     lang = options.lang
-    intermediate_save = options.intermediate_save
-    save_csv = options.save_csv
 
     # Build parameters dict
     parameters = {
-        'term': build_search_term(comma_sep_terms),
+        'term': _build_search_term(comma_sep_terms),
         'count': 100,
         'include_entities': False,
         'lang': lang,
     }
 
-    tweets = []
-    for idx, tweet in enumerate(get_tweets(start_id, parameters)):
-        tweets.append(_build_tweet_entry(tweet))
-        # Store intermediate results
-        if (idx + 1) % intermediate_save == 0:
-            df = pd.DataFrame(tweets)
-            df.to_pickle(f"{round(time.time())}_output.pkl")
+    # Create file and write top row with column names
+    file_name = f"{round(time.time())}_output.csv"
+    with open(file_name, mode='w', encoding='utf-8-sig', newline='') as fp:
+        writer = csv.writer(fp)
+        writer.writerow(Tweet._fields)
 
-    if len(tweets):
-        df = pd.DataFrame(tweets)
-        df.to_pickle(f"{round(time.time())}_output.pkl")
+    for tweet in get_tweets(start_id, parameters):
+        tweet_instance = _process_tweet(tweet)
+        with open(file_name, mode='a', encoding='utf-8-sig', newline='') as fp:
+            writer = csv.writer(fp)
+            writer.writerow(tweet_instance)
 
-        earliest = df.loc[0, 'date']
-        latest = df.loc[df.shape[0] - 1, 'date']
-        print(f'Got {df.shape[0]} tweets going from {earliest} to {latest}')
 
-        if save_csv:
-            import csv
-            with open(f"{round(time.time())}_output.csv", mode='w', encoding='utf-8-sig', newline='') as fp:
-                writer = csv.writer(fp)
-                writer.writerow(df.columns)
-                for line in df.itertuples(index=False):
-                    writer.writerow(line)
-            #df.to_csv(f"{round(time.time())}_output.csv", encoding='utf-8-sig')
-        return df
-    else:
-        print("Didn't find any tweets for the given parameters")
-
-def build_search_term(comma_sep_terms):
+def _build_search_term(comma_sep_terms):
     """
     Takes a string of comma-separated terms to be searched
     and returns it as one string as the API expects it
@@ -158,6 +125,46 @@ def build_search_term(comma_sep_terms):
         # Single term to search
         return entries[0]
     return ' OR '.join(entries)
+
+
+def _parse_date(date):
+    """
+    receives a date as a string and returns a timestamp
+    Turn back to datetime: datetime.datetime.fromtimestamp(timestamp)
+    Timezone is always UTC
+    """
+    # sample input: 'Thu Jun 13 21:21:39 +0000 2019'
+    # Remove day of week (first 4 chars)
+    date = date[4:]
+    # Remove microseconds
+    date, year = date.split('+')
+    date = date.strip()
+    date += ' 2019'
+    date = parse(date, ignoretz=True)
+    timestamp = date.replace(tzinfo=datetime.timezone.utc).timestamp()
+    return timestamp
+
+
+def _process_tweet(tweet):
+    """ Receives a Tweet from the Search API and processes it """
+
+    text = tweet.full_text.replace('\n', ' ')
+    timestamp = _parse_date(tweet.created_at)
+    is_retweet = True if text.startswith('RT') else False
+    try:
+        city = tweet.place['full_name']
+    except TypeError:
+        city = None
+
+    tweet_instance = Tweet(tweet.created_at, timestamp, tweet.id,
+                           tweet.full_text, tweet.user.screen_name,
+                           tweet.place, tweet.user.id,
+                           tweet.user.followers_count,
+                           tweet.favorite_count, tweet.retweet_count,
+                           is_retweet, city,
+                           )
+
+    return tweet_instance
 
 
 if __name__ == '__main__':
