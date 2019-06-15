@@ -19,7 +19,7 @@ import csv
 import twitter
 
 Tweet = namedtuple('Tweet', ['date', 'timestamp', 'id', 'text',
-                             'user_handle', 'place',
+                             'user_handle',
                              'user_id', 'followers_count',
                              'favorite_count', 'retweet_count',
                              'is_retweet', 'city', 'country'])
@@ -149,7 +149,8 @@ def _process_tweet(tweet):
     """ Receives a Tweet from the Search API and processes it """
 
     text = tweet.full_text.replace('\n', ' ')
-    timestamp = _parse_date(tweet.created_at)
+    # Replaced with the created_at_in_seconds attribute
+    # timestamp = _parse_date(tweet.created_at)
     is_retweet = True if text.startswith('RT') else False
     try:
         city = tweet.place['name']
@@ -159,9 +160,9 @@ def _process_tweet(tweet):
         city = None
         country = None
 
-    tweet_instance = Tweet(tweet.created_at, timestamp, tweet.id,
+    tweet_instance = Tweet(tweet.created_at, tweet.created_at_in_seconds, tweet.id,
                            tweet.full_text, tweet.user.screen_name,
-                           tweet.place, tweet.user.id,
+                           tweet.user.id,
                            tweet.user.followers_count,
                            tweet.favorite_count, tweet.retweet_count,
                            is_retweet, city, country
