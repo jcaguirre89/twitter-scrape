@@ -1,7 +1,7 @@
 """
-A generator that searches for tweets from the Twitter Search API for a given set of parameters (like
-term, geocode, etc.) and an additional function to put the results into a pandas dataframe and save
-the results to a pickle file, for later exploration with jupyter.
+A generator that searches for tweets from the Twitter Search API
+for a given set of parameters (like term, geocode, etc.) and
+an additional function to save the results to a CSV file.
 
 Sleeps automatically if the rate limit set by the twitter api is reached.
 
@@ -83,9 +83,7 @@ def get_tweets(start_id, parameters):
 
 def main():
     """
-    Run the get_tweets generator and return a pandas dataframe with results, while storing
-    intermediate and final results as a pickle file in the current working directory.
-
+    Run the get_tweets generator and save results to a CSV file
     """
 
     # Get args
@@ -155,7 +153,6 @@ def _process_tweet(tweet):
     try:
         city = tweet.place['name']
         country = tweet.place['country']
-
     except TypeError:
         city = None
         country = None
