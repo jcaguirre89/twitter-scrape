@@ -106,12 +106,10 @@ def main():
         writer = csv.writer(fp)
         writer.writerow(Tweet._fields)
 
-    for tweet in get_tweets(start_id, parameters):
-        tweet_instance = _process_tweet(tweet)
-        with open(OUT_FILENAME, mode='a', encoding='utf-8-sig', newline='') as fp:
-            writer = csv.writer(fp)
-            writer.writerow(tweet_instance)
-
+        # Then download tweets and write to file until exhausted
+        for tweet in get_tweets(start_id, parameters):
+            tweet_record = _process_tweet(tweet)
+            writer.writerow(tweet_record)
 
 def _build_search_term(comma_sep_terms):
     """
