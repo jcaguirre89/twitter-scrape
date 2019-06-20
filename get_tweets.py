@@ -63,7 +63,7 @@ def get_tweets(start_id, parameters):
     :return: yields a namedtuple corresponding to a tweet.
     """
     latest_tweets = api.GetSearch(**parameters)
-    if not len(latest_tweets):
+    if not latest_tweets:
         return []
     last_id = latest_tweets[-1].id
     for tweet in latest_tweets:
