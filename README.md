@@ -9,7 +9,7 @@ Once done it saves a pickled pandas dataframe with the resulting tweets. Also sa
 python get_tweets.py --terms Chile,Santiago --lang es
 ```
 
-Only mandatory argument is `--terms`, which must be a comma-separated string. Additional arguments are `--lang` for the language and `start_id` to define how far back to search. The defaults are:
+Only mandatory argument is `--terms`, which must be a comma-separated string. Additional arguments are `--lang` for the language and `--start_id` to define how far back to search. The defaults are:
 - `start_id`: As far back as possible (around 7 days)
 - `lang`: `en`
 
