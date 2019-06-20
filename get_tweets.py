@@ -106,7 +106,9 @@ def main():
         writer = csv.writer(fp)
         writer.writerow(Tweet._fields)
 
-        # Then download tweets and write to file until exhausted
+        # Then start downloading tweets and writing to file until exhausted
+        # Because get_tweets is a generator, there won't be
+        # any memory problems if too many are retrieved
         for tweet in get_tweets(start_id, parameters):
             tweet_record = _process_tweet(tweet)
             writer.writerow(tweet_record)
