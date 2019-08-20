@@ -17,21 +17,26 @@ import datetime
 import csv
 
 import twitter
+from decouple import config, UndefinedValueError
 
 Tweet = namedtuple('Tweet', ['date', 'timestamp', 'id', 'text',
                              'user_handle',
                              'user_id', 'followers_count',
                              'favorite_count', 'retweet_count',
                              'is_retweet', 'city', 'country'])
-
 try:
-    from secrets import api_key
-except ImportError:
-    raise ImportError('Remember to create a secrets.py file with the twitter API keys')
+    api_key = (
+        config('CONSUMER_KEY'),
+        config('CONSUMER_SECRET'),
+        config('ACCESS_TOKEN'),
+        config('ACCESS_TOKEN_SECRET'),
+    )
+except UndefinedValueError:
+    print('No env file with correct format found')
 
 DEFAULT_LANG = 'en'
 # Just an old start id, will run until 7 days are reached
-DEFAULT_START_ID = 1132073789481787392
+DEFAULT_START_ID = 1932073789481787392
 OUT_FILENAME = f"{round(time.time())}_output.csv"
 
 
