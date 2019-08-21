@@ -6,3 +6,4 @@ test*
 .ipynb*
 *.csv
 *.pkl
+.env
